@@ -54,6 +54,10 @@ const register = catchAsync(async (req, res, next) => {
                     <p>This code expires in 10 minutes.</p>
                     `,
         });
+        return res.status(201).json({
+            status: "success",
+            msg: "OTP sent to your email"
+        })
 
     } catch (err) {
         console.error(err);
