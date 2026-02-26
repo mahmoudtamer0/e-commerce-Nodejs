@@ -41,28 +41,22 @@ const register = catchAsync(async (req, res, next) => {
         })
         await user.save()
     }
-    console.log(process.env.EMAIL_USER)
-    console.log(process.env.EMAIL_PASS ? "PASS EXISTS" : "NO PASS")
-    try {
-        await sendEmail({
-            email: email,
-            subject: "Verify your email",
-            message: `
+
+
+    await sendEmail({
+        email: email,
+        subject: "Verify your email",
+        message: `
+                <div style="font-family: Arial; text-align: center;">
                     <h2>Email Verification</h2>
                     <p>Your verification code is:</p>
-                    <h1>${otp}</h1>
+                    <h1 style="letter-spacing: 5px;">${otp}</h1>
                     <p>This code expires in 10 minutes.</p>
-                    `,
-        });
-        return res.status(201).json({
-            status: "success",
-            msg: "OTP sent to your email"
-        })
+                </div>
+            `,
+    });
 
-    } catch (err) {
-        console.error(err);
-        return next(new ApiError(500, "Email failed to send"));
-    }
+
 
     return res.status(201).json({
         status: "success",

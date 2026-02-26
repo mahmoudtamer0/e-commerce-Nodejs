@@ -1,29 +1,30 @@
 const nodemailer = require("nodemailer");
 
+const transporter = nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 
+const sendEmail = async ({ email, subject, message }) => {
+    try {
+        await transporter.sendMail({
+            from: "mamoidtamer300@gmail.com",
+            to: email,
+            subject: subject,
+            html: message,
+        });
 
-const sendEmail = async (options) => {
+        console.log("Email sent successfully");
 
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
-
-    const mailOptions = {
-        from: `Ecommerce App <${process.env.EMAIL_USER}>`,
-        to: options.email,
-        subject: options.subject,
-        html: options.message,
-    };
-
-
-    await transporter.sendMail(mailOptions)
-
-}
+    } catch (error) {
+        console.error("Email sending error:", error);
+        throw error;
+    }
+};
 
 module.exports = sendEmail;
