@@ -19,15 +19,15 @@ router.route("/verify-email")
     .post(verifyEmail)
 router.route("/login")
     .post(loginValidator, login)
-router.route("/me")
-    .get(verifyToken, userProfile)
+router.route("/:userId")
+    .get(userProfile)
 router.route("/me/update")
     .patch(verifyToken,
         upload.fields([
             { name: "image", maxCount: 1 },
             { name: "posts", maxCount: 5 }
         ]),
-        updateValidator, updateProfile)
+        updateProfile)
 router.get("/refresh", refreshTokenController);
 router.post("/logout", logout);
 router.post("/refresh", refreshTokenController);

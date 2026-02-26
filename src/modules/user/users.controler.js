@@ -292,7 +292,7 @@ const changePassword = catchAsync(async (req, res, next) => {
 const userProfile = catchAsync(async (req, res, next) => {
 
     const baseUrl = `${req.protocol}://${req.get("host")}`
-    const userId = req.user.id
+    const { userId } = req.params
 
     const user = await User.findById(userId).select("-password -__v -createdAt -updatedAt -role")
 
@@ -313,8 +313,11 @@ const updateProfile = catchAsync(async (req, res, next) => {
     const fs = require("fs");
     const path = require("path");
     const { name, deleteImage, replaceImage, deletePosts, addPosts } = req.body
-    const userId = req.user.id
-    const user = await User.findById(userId)
+    const userFromToken = req.user
+    const user = await User.findById({ _id: userFromToken.id })
+    if (!user) {
+        return next(new ApiError(404, "user not found"));
+    }
     if (name) {
         user.name = name
     }
@@ -360,7 +363,8 @@ const updateProfile = catchAsync(async (req, res, next) => {
 
     await user.save()
 
-    return res.status(200).json("updated")
+
+    return res.status(200).json({ status: "success", data: null })
 
 })
 
