@@ -54,11 +54,16 @@ const register = catchAsync(async (req, res, next) => {
                     <p>This code expires in 10 minutes.</p>
                     `,
         });
+
     } catch (err) {
         console.error(err);
         return next(new ApiError(500, "Email failed to send"));
     }
 
+    return res.status(201).json({
+        status: "success",
+        msg: "OTP sent to your email"
+    })
     // await sendEmail({
     //     email: email,
     //     subject: "Verify your email",
@@ -70,10 +75,6 @@ const register = catchAsync(async (req, res, next) => {
     //             `,
     // });
 
-    return res.status(201).json({
-        status: "success",
-        msg: "OTP sent to your email"
-    })
     // if (req.files && req.files.image) {
     //     imageName = req.files.image[0].filename;
     // }

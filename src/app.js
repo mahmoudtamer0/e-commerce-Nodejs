@@ -16,7 +16,7 @@ const reviewRouter = require("./modules/review/review.router");
 const globalErrorHandler = require("./middlewares/error");
 
 const app = express();
-
+app.set("trust proxy", 1);
 //Security Middlewares
 app.use(helmet());
 app.use(cors());
