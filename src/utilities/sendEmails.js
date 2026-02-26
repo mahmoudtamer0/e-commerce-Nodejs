@@ -1,29 +1,45 @@
-const nodemailer = require("nodemailer");
+// const SibApiV3Sdk = require("@sendinblue/client");
 
-const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+// const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
-const sendEmail = async ({ email, subject, message }) => {
+// apiInstance.setApiKey(
+//     SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+//     process.env.BREVO_API
+// );
+
+// const sendEmail = async ({ email, subject, message }) => {
+//     await apiInstance.sendTransacEmail({
+//         sender: { email: process.env.BREVO_USER },
+//         to: [{ email }],
+//         subject,
+//         htmlContent: message,
+//     });
+// };
+
+// module.exports = sendEmail;
+
+const SibApiV3Sdk = require('sib-api-v3-sdk');
+
+const client = SibApiV3Sdk.ApiClient.instance;
+client.authentications['api-key'].apiKey = process.env.BREVO_API;
+
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+const sendEmail = async ({ email, message, subject }) => {
     try {
-        await transporter.sendMail({
-            from: "mamoidtamer300@gmail.com",
-            to: email,
+        await apiInstance.sendTransacEmail({
+            sender: {
+                email: "mamoidtamer300@gmail.com",
+                name: "My App"
+            },
+            to: [{ email: email }],
             subject: subject,
-            html: message,
+            htmlContent: message
         });
 
         console.log("Email sent successfully");
-
     } catch (error) {
-        console.error("Email sending error:", error);
-        throw error;
+        console.log(error.response?.body || error.message);
     }
 };
 
