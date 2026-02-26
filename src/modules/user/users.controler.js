@@ -35,23 +35,28 @@ const register = catchAsync(async (req, res, next) => {
             email: email,
             password: hash,
             image: imageName,
-            posts: posts
+            posts: posts,
+            emailVerificationCode: hashedOtp,
+            emailVerificationExpires: expires,
         })
-
         await user.save()
     }
 
-    await sendEmail({
-        email: email,
-        subject: "Verify your email",
-        message: `
-                <h2>Email Verification</h2>
-                <p>Your verification code is:</p>
-                <h1>${otp}</h1>
-                <p>This code expires in 10 minutes.</p>
-                `,
-    });
+    // await sendEmail({
+    //     email: email,
+    //     subject: "Verify your email",
+    //     message: `
+    //             <h2>Email Verification</h2>
+    //             <p>Your verification code is:</p>
+    //             <h1>${otp}</h1>
+    //             <p>This code expires in 10 minutes.</p>
+    //             `,
+    // });
 
+    return res.status(201).json({
+        status: "success",
+        msg: "OTP sent to your email"
+    })
     // if (req.files && req.files.image) {
     //     imageName = req.files.image[0].filename;
     // }
@@ -77,10 +82,6 @@ const register = catchAsync(async (req, res, next) => {
     //     refreshToken: refreshToken,
     //     device: req.headers["user-agent"]
     // });
-    return res.status(201).json({
-        status: "success",
-        msg: "OTP sent to your email"
-    })
 })
 
 const verifyEmail = catchAsync(async (req, res, next) => {
