@@ -19,8 +19,7 @@ router.route("/verify-email")
     .post(verifyEmail)
 router.route("/login")
     .post(loginValidator, login)
-router.route("/:userId")
-    .get(userProfile)
+
 router.route("/me/update")
     .patch(verifyToken,
         upload.fields([
@@ -30,9 +29,10 @@ router.route("/me/update")
         updateProfile)
 router.get("/refresh", refreshTokenController);
 router.post("/logout", logout);
-router.post("/refresh", refreshTokenController);
 router.patch("/changepassword", verifyToken, changePassword, logoutAllDevices);
 router.patch("/ban/:userId", verifyToken, allowTo("ADMIN"), banUser)
+router.route("/:userId")
+    .get(userProfile)
 
 
 module.exports = router

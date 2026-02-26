@@ -62,42 +62,6 @@ const register = catchAsync(async (req, res, next) => {
         status: "success",
         msg: "OTP sent to your email"
     })
-    // await sendEmail({
-    //     email: email,
-    //     subject: "Verify your email",
-    //     message: `
-    //             <h2>Email Verification</h2>
-    //             <p>Your verification code is:</p>
-    //             <h1>${otp}</h1>
-    //             <p>This code expires in 10 minutes.</p>
-    //             `,
-    // });
-
-    // if (req.files && req.files.image) {
-    //     imageName = req.files.image[0].filename;
-    // }
-
-
-    // if (req.files && req.files.posts) {
-    //     posts = req.files.posts.map(post => post.filename);
-    // }
-
-
-
-    // const accesstoken = generateAccessToken(user.email, user._id, user.role)
-    // const refreshToken = generateRefreshToken(user._id)
-
-    // res.cookie("refreshToken", refreshToken, {
-    //     httpOnly: true,
-    //     secure: false,
-    //     sameSite: "lax",
-    //     maxAge: 7 * 24 * 60 * 60 * 1000
-    // });
-    // await Session.create({
-    //     userId: user._id,
-    //     refreshToken: refreshToken,
-    //     device: req.headers["user-agent"]
-    // });
 })
 
 const verifyEmail = catchAsync(async (req, res, next) => {
@@ -219,7 +183,7 @@ const refreshTokenController = catchAsync(async (req, res, next) => {
         const user = await User.findById(decoded.id);
 
         if (!user) {
-            return next(new ApiError(404, "User not found" + decoded.id));
+            return next(new ApiError(404, "User not found" + " " + decoded.id));
         }
         if (user.status == "banned") {
             return next(new ApiError(403, "Account is temporarily banned"));
