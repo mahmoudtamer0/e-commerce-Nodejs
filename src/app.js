@@ -25,6 +25,14 @@ app.use(mongoSanitize());
 app.use(xss());
 app.use(hpp());
 
+const fs = require("fs");
+
+const uploadDir = "uploads";
+
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
 // Static Files
 app.use("/uploads", express.static("uploads"));
 
