@@ -52,35 +52,27 @@ node src/server.js
 
 📡 API Endpoints
 
-📡 API Endpoints (User Management / Authentication)
-Authentication & Registration
-Method	     Endpoint	              Description	                                   Auth
-POST	/api/v1/users/register	Register a new user (upload profile image + posts)	Public
-POST	/api/v1/users/verify-email	Verify user email	Public
-POST	/api/v1/users/login	Login with email & password	Public
-GET	/api/v1/users/refresh	Refresh access token	User
-POST	/api/v1/users/logout	Logout current session	User
-PATCH	/api/v1/users/changepassword	Change password and logout all devices	User
-
-Profile Management
-Method	Endpoint	Description	Auth
-PATCH	/api/v1/users/me/update	Update user profile (image + posts)	User
-GET	/api/v1/users/:userId	Get public profile of a user	Public
-Admin Actions
-
-Method	Endpoint	Description	Auth
-PATCH	/api/v1/users/ban/:userId	Ban a user	Admin
+📡| Method | Endpoint                       | Description                                        | Auth   |
+| ------ | ------------------------------ | -------------------------------------------------- | ------ |
+| POST   | `/api/v1/users/register`       | Register a new user (upload profile image + posts) | Public |
+| POST   | `/api/v1/users/verify-email`   | Verify user email                                  | Public |
+| POST   | `/api/v1/users/login`          | Login with email & password                        | Public |
+| GET    | `/api/v1/users/refresh`        | Refresh access token                               | User   |
+| POST   | `/api/v1/users/logout`         | Logout current session                             | User   |
+| PATCH  | `/api/v1/users/changepassword` | Change password & logout all devices               | User   |
+| PATCH  | `/api/v1/users/me/update`      | Update user profile (image + posts)                | User   |
+| GET    | `/api/v1/users/:userId`        | Get public profile of a user                       | Public |
+| PATCH  | `/api/v1/users/ban/:userId`    | Ban a user                                         | Admin  |
 
 
 
-Products
-Method	Endpoint	Description	Auth
-GET	/api/v1/products	Get all products	Public
-POST	/api/v1/products	Add a new product (max 5 images)	Admin
-PATCH	/api/v1/products/:prodId	Update product details (with images)	Admin
-PATCH	/api/v1/products/:prodId/delete	Delete a product	Admin
+| Method | Endpoint                          | Description                          | Auth   |
+| ------ | --------------------------------- | ------------------------------------ | ------ |
+| GET    | `/api/v1/products`                | Get all products                     | Public |
+| POST   | `/api/v1/products`                | Add a new product (max 5 images)     | Admin  |
+| PATCH  | `/api/v1/products/:prodId`        | Update product details (with images) | Admin  |
+| PATCH  | `/api/v1/products/:prodId/delete` | Delete a product                     | Admin  |
 
-Example Request: Add Product
 
 POST /api/v1/products
 {
@@ -89,9 +81,6 @@ POST /api/v1/products
   "category": "catId",
   "description": "High-quality wireless mouse"
 }
-
-Example Response
-
 {
   "status": "success",
   "data": {
@@ -105,13 +94,16 @@ Example Response
     }
   }
 }
+
 Orders
-Method	Endpoint	Description	Auth
-GET	/api/v1/orders	Get all orders	Admin
-POST	/api/v1/orders	Create a new order	User
-GET	/api/v1/orders/:orderId	Get order details	User
-PATCH	/api/v1/orders/:orderId	Edit an order	User
-PATCH	/api/v1/orders/:orderId/status	Update order status	Admin
+| Method | Endpoint                         | Description         | Auth  |
+| ------ | -------------------------------- | ------------------- | ----- |
+| GET    | `/api/v1/orders`                 | Get all orders      | Admin |
+| POST   | `/api/v1/orders`                 | Create a new order  | User  |
+| GET    | `/api/v1/orders/:orderId`        | Get order details   | User  |
+| PATCH  | `/api/v1/orders/:orderId`        | Edit an order       | User  |
+| PATCH  | `/api/v1/orders/:orderId/status` | Update order status | Admin |
+
 
 Example Request: Create Order
 
@@ -140,12 +132,17 @@ Example Response
     }
   }
 }
+
+
 Categories
-Method	Endpoint	Description	Auth
-GET	/api/v1/categories	Get all categories	Public
-POST	/api/v1/categories	Add a new category	Admin
-PATCH	/api/v1/categories/:catId	Update category	Admin
-DELETE	/api/v1/categories/:catId	Delete category	Admin
+
+| Method | Endpoint                    | Description        | Auth   |
+| ------ | --------------------------- | ------------------ | ------ |
+| GET    | `/api/v1/categories`        | Get all categories | Public |
+| POST   | `/api/v1/categories`        | Add a new category | Admin  |
+| PATCH  | `/api/v1/categories/:catId` | Update category    | Admin  |
+| DELETE | `/api/v1/categories/:catId` | Delete category    | Admin  |
+
 
 Example Request: Add Category
 
@@ -166,9 +163,13 @@ Example Response
     }
   }
 }
+
+
 Reviews
-Method	Endpoint	Description	Auth
-POST	/api/v1/products/:prodId/reviews	Add a review for a product	User
+| Method | Endpoint                           | Description                | Auth |
+| ------ | ---------------------------------- | -------------------------- | ---- |
+| POST   | `/api/v1/products/:prodId/reviews` | Add a review for a product | User |
+
 
 Example Request: Add Review
 

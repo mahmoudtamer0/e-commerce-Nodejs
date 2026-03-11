@@ -4,7 +4,6 @@ package-lock.json
 yarn.lock
 
 # Environment variables
-.env
 
 # Logs
 logs
@@ -39,3 +38,4 @@ Thumbs.db
 
 # Debug
 debug.log
+config.bat
