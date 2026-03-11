@@ -20,6 +20,6 @@ router.route("/:prodId")
         upload.array("productImages", 5),
         productsUpdateValidator,
         updateProducts)
-    .patch(verifyToken, allowTo("ADMIN"), deleteProduct)
+    .delete(verifyToken, allowTo("ADMIN"), deleteProduct)
 
 module.exports = router

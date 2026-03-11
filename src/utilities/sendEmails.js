@@ -1,23 +1,3 @@
-// const SibApiV3Sdk = require("@sendinblue/client");
-
-// const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-
-// apiInstance.setApiKey(
-//     SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
-//     process.env.BREVO_API
-// );
-
-// const sendEmail = async ({ email, subject, message }) => {
-//     await apiInstance.sendTransacEmail({
-//         sender: { email: process.env.BREVO_USER },
-//         to: [{ email }],
-//         subject,
-//         htmlContent: message,
-//     });
-// };
-
-// module.exports = sendEmail;
-
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 
 const client = SibApiV3Sdk.ApiClient.instance;

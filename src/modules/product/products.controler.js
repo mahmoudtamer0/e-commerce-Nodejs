@@ -166,8 +166,6 @@ const deleteProduct = catchAsync(async (req, res, next) => {
 
     await Product.findByIdAndDelete(prodId);
 
-
-
     return res.status(200).json({
         status: "success",
         data: null
