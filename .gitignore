@@ -31,7 +31,7 @@ uploads/
 # OS files
 .DS_Store
 Thumbs.db
-
+.env
 # Editor files
 .vscode/
 .idea/
