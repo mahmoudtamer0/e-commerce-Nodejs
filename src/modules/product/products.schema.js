@@ -43,10 +43,11 @@ const productSchema = new mongoose.Schema({
         default: 0,
     },
 
-    productImages: {
-        type: [String],
-        default: [],
-    },
+    productImages: [{
+        url: { type: String },
+        cloudinary_id: { type: String }
+    }],
+
     averageRate: {
         type: Number,
         default: 5,

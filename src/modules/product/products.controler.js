@@ -12,11 +12,15 @@ const getAllProducts = catchAsync(async (req, res, next) => {
         category,
         minPrice,
         maxPrice,
-        search,
-        page,
-        limit,
+        search
     } = req.query;
     let filter = {}
+
+
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 10;
+    const skip = (page - 1) * limit
+
 
 
     if (category) {
@@ -37,9 +41,6 @@ const getAllProducts = catchAsync(async (req, res, next) => {
     }
 
 
-    const skip = (page - 1) * limit
-
-
 
     const products = await Product.find(filter)
         .skip(skip)
@@ -48,11 +49,48 @@ const getAllProducts = catchAsync(async (req, res, next) => {
         .sort({ updatedAt: -1 })
         .select("-createdAt -updatedAt -__v")
         .lean()
+    const total = await Product.countDocuments()
+
     return res.status(200).json({
         status: "success",
-        data: products
+        results: products.length,
+        data: products,
+        totalProducts: total,
+        totalPages: Math.ceil(total / limit),
+        page
     })
 
+})
+
+const getProduct = catchAsync(async (req, res, next) => {
+
+
+    const { prodId } = req.params;
+
+    const product = await Product.findById(prodId)
+
+    if (!product) {
+        return next(new ApiError(404, "not found"));
+    }
+
+    return res.status(200).json({
+        status: "success",
+        data: product
+    })
+
+})
+
+
+const addManyProducts = catchAsync(async (req, res, next) => {
+    const { products } = req.body
+
+    await Product.insertMany(products)
+
+
+    return res.status(200).json({
+        status: "success",
+        data: "done"
+    })
 })
 
 
@@ -63,11 +101,8 @@ const addProduct = catchAsync(async (req, res, next) => {
 
     let productImages = []
 
-    if (req.files && req.files.length > 0) {
-        productImages = req.files.map(img => img.filename)
-    }
     const finalPrice = await generateFinalPrice(Number(originalPrice), Number(discount))
-    const prod = new Product({
+    const prod = await Product.create({
         title,
         description,
         originalPrice: Number(originalPrice),
@@ -76,9 +111,20 @@ const addProduct = catchAsync(async (req, res, next) => {
         category,
         stock,
         buys,
-        productImages
+
     })
-    await prod.save()
+
+    if (req.files && req.files.length > 0) {
+        prod.productImages = req.files.map(img => {
+            return {
+                url: img.path,
+                cloudinary_id: img.filename
+            }
+        })
+
+        await prod.save()
+    }
+
 
     return res.status(200).json({
         status: "success",
@@ -180,5 +226,7 @@ module.exports = {
     getAllProducts,
     addProduct,
     updateProducts,
-    deleteProduct
+    deleteProduct,
+    addManyProducts,
+    getProduct
 }

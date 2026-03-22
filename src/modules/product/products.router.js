@@ -1,7 +1,7 @@
 const express = require("express")
 const verifyToken = require("../../middlewares/verifyToken")
 const allowTo = require("../../middlewares/allowTo")
-const { addProduct, getAllProducts, updateProducts, deleteProduct } = require("./products.controler")
+const { addProduct, getAllProducts, updateProducts, deleteProduct, addManyProducts, getProduct } = require("./products.controler")
 const upload = require("../../middlewares/productsUpload");
 const { productsValidator, productsUpdateValidator } = require("../../middlewares/productsValidator");
 
@@ -21,5 +21,11 @@ router.route("/:prodId")
         productsUpdateValidator,
         updateProducts)
     .delete(verifyToken, allowTo("ADMIN"), deleteProduct)
+
+router.route("/many")
+    .post(addManyProducts)
+
+router.route("/:prodId")
+    .get(getProduct)
 
 module.exports = router
