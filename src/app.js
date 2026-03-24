@@ -38,7 +38,7 @@ app.use("/uploads", express.static("uploads"));
 
 //Rate limit
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
+    windowMs: 5 * 60 * 1000,
     max: 100,
     message: {
         status: "fail",
@@ -55,7 +55,7 @@ const authLimiter = rateLimit({
 //Routes
 app.use(cookieParser());
 app.use("/api", apiLimiter);
-app.use('/api/v1/category', categoryRouter)
+app.use('/api/v1/categories', categoryRouter)
 app.use("/api/v1/users/login", authLimiter);
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/products', productsRouter)

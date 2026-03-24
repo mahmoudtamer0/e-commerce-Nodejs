@@ -27,13 +27,21 @@ const productSchema = new mongoose.Schema({
         default: 0,
     },
 
-    category: {
+    category: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Category",
+            required: true
+        }
+    ],
+
+    type: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
-        required: true,
+        ref: "ProductType",
+        required: true
     },
 
-    stock: {
+    totalStock: {
         type: Number,
         default: 0,
     },
@@ -47,6 +55,23 @@ const productSchema = new mongoose.Schema({
         url: { type: String },
         cloudinary_id: { type: String }
     }],
+
+    variants: [
+        {
+            size: {
+                type: String,
+                enum: ["S", "M", "L", "XL", "XXL"],
+                required: true
+            },
+
+            stock: {
+                type: Number,
+                default: 0
+            }
+        }
+    ],
+
+
 
     averageRate: {
         type: Number,

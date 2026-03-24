@@ -15,6 +15,9 @@ router.route("/")
     .get(getAllProducts)
 
 
+router.route("/many")
+    .post(addManyProducts)
+
 router.route("/:prodId")
     .patch(verifyToken, allowTo("ADMIN"),
         upload.array("productImages", 5),
@@ -22,8 +25,6 @@ router.route("/:prodId")
         updateProducts)
     .delete(verifyToken, allowTo("ADMIN"), deleteProduct)
 
-router.route("/many")
-    .post(addManyProducts)
 
 router.route("/:prodId")
     .get(getProduct)

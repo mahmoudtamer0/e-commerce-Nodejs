@@ -1,4 +1,6 @@
 const Product = require("./products.schema")
+const ProductType = require("./productType.schema")
+const Category = require("../category/category.schema")
 const { generateFinalPrice } = require("../../utilities/generatFinalPrice")
 
 const catchAsync = require("../../utilities/catchAsync");
@@ -12,19 +14,25 @@ const getAllProducts = catchAsync(async (req, res, next) => {
         category,
         minPrice,
         maxPrice,
-        search
+        search,
+        sort,
+        type
     } = req.query;
     let filter = {}
-
+    let toSort = {}
 
     const page = req.query.page * 1 || 1;
     const limit = req.query.limit * 1 || 10;
     const skip = (page - 1) * limit
 
 
-
-    if (category) {
-        filter.category = category;
+    if (category && category != "") {
+        const findCat = await Category.findOne({ name: category })
+        if (findCat) {
+            filter.category = findCat._id
+        } else {
+            filter.category = ""
+        }
     }
 
     if (minPrice || maxPrice) {
@@ -40,16 +48,41 @@ const getAllProducts = catchAsync(async (req, res, next) => {
         ];
     }
 
+    if (type) {
+        const findType = await ProductType.findOne({ name: type })
 
+        if (findType) {
+            filter.type = findType._id
+            console.log(findType.id)
+        } else {
+            filter.type = ""
+        }
+    }
+
+    if (sort) {
+        if (sort == "best-selling") {
+            toSort = { buys: -1 }
+        } else if (sort == "on-sale") {
+            toSort = { discount: -1 }
+        } else if (sort == "min-price") {
+            toSort = { finalPrice: +1 }
+        } else if (sort == "max-price") {
+            toSort = { finalPrice: -1 }
+        } else {
+            toSort = { updatedAt: -1 }
+        }
+    } else {
+        toSort = { updatedAt: -1 }
+    }
 
     const products = await Product.find(filter)
         .skip(skip)
         .limit(Number(limit))
         .populate("category", "name")
-        .sort({ updatedAt: -1 })
+        .sort(toSort)
         .select("-createdAt -updatedAt -__v")
         .lean()
-    const total = await Product.countDocuments()
+    const total = await Product.countDocuments(filter)
 
     return res.status(200).json({
         status: "success",
@@ -82,7 +115,7 @@ const getProduct = catchAsync(async (req, res, next) => {
 
 
 const addManyProducts = catchAsync(async (req, res, next) => {
-    const { products } = req.body
+    const products = req.body
 
     await Product.insertMany(products)
 
@@ -138,6 +171,7 @@ const updateProducts = catchAsync(async (req, res, next) => {
 
     const fs = require("fs");
     const path = require("path");
+    const { variants, title, description, originalPrice, discount } = req.body
     const prodId = req.params.prodId
     const existingProduct = await Product.findById(prodId)
     let updatedImages = existingProduct.productImages
@@ -163,30 +197,62 @@ const updateProducts = catchAsync(async (req, res, next) => {
         updatedImages = [...updatedImages, ...newImages]
     }
 
-    const originalPrice = req.body.originalPrice != undefined ? Number(req.body.originalPrice) : existingProduct.originalPrice
-    const discount = req.body.discount != undefined ? Number(req.body.discount) : existingProduct.discount
+    if (title) {
+        existingProduct.title = title;
+        await existingProduct.save()
+    }
 
-    const finalPrice = await generateFinalPrice(originalPrice, discount);
+    if (description) {
+        existingProduct.description = description;
+        await existingProduct.save()
+    }
+
+    if (originalPrice || discount) {
+
+        const newOriginalPrice = originalPrice != undefined ? Number(originalPrice) : existingProduct.originalPrice
+        const newDiscount = discount != undefined ? Number(discount) : existingProduct.discount
+
+        existingProduct.finalPrice = await generateFinalPrice(Number(newOriginalPrice), Number(newDiscount));
+        existingProduct.discount = newDiscount
+        existingProduct.originalPrice = newOriginalPrice
+
+        await existingProduct.save()
+    }
+
+    if (variants) {
+
+        for (let newVar of variants) {
+            const existing = existingProduct.variants.find(
+                v => v.size === newVar.size
+            );
+
+            if (existing) {
+                existing.stock = newVar.stock;
+            } else {
+                existingProduct.variants.push(newVar);
+            }
+        }
+
+        await existingProduct.save()
+    }
 
 
-    const updatedProduct = await Product.findByIdAndUpdate(prodId, {
-        ...req.body,
-        originalPrice: originalPrice,
-        discount: discount,
-        finalPrice: finalPrice,
-        productImages: updatedImages
-    }, { new: true })
+    // const updatedProduct = await Product.findByIdAndUpdate(prodId, {
+    //     ...req.body,
+    //     originalPrice: originalPrice,
+    //     discount: discount,
+    //     finalPrice: finalPrice,
+    //     productImages: updatedImages
+    // }, { new: true })
 
 
     return res.status(200).json({
         status: "success",
-        data: updatedProduct
+        data: existingProduct
     })
 
 
 })
-
-
 
 const deleteProduct = catchAsync(async (req, res, next) => {
 
@@ -228,5 +294,6 @@ module.exports = {
     updateProducts,
     deleteProduct,
     addManyProducts,
-    getProduct
+    getProduct,
+
 }
