@@ -1,7 +1,6 @@
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
-
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
 
@@ -14,10 +13,10 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
 
-    filename: function (req, file, cb) {
-        const cleanName = file.originalname.replace(/\s+/g, "_");
-        cb(null, Date.now() + "-" + cleanName);
-    }
+    // filename: function (req: Request, file, cb) {
+    //     const cleanName = file.originalname.replace(/\s+/g, "_");
+    //     cb(null, Date.now() + "-" + cleanName);
+    // }
 });
 
 module.exports = multer({ storage });
