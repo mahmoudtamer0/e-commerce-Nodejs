@@ -53,12 +53,11 @@ const getAllProducts = catchAsync(async (req, res, next) => {
 
         if (findType) {
             filter.type = findType._id
-            console.log(findType.id)
         } else {
             filter.type = ""
         }
     }
-    console.log(sort)
+
     if (sort) {
         if (sort == "best-selling" || sort == "Most Popular") {
             toSort = { buys: -1 }
