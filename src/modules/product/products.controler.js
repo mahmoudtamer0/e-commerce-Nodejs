@@ -58,15 +58,17 @@ const getAllProducts = catchAsync(async (req, res, next) => {
             filter.type = ""
         }
     }
-
+    console.log(sort)
     if (sort) {
-        if (sort == "best-selling") {
+        if (sort == "best-selling" || sort == "Most Popular") {
             toSort = { buys: -1 }
         } else if (sort == "on-sale") {
             toSort = { discount: -1 }
-        } else if (sort == "min-price") {
+        } else if (sort == "Newest") {
+            toSort = { updatedAt: -1 }
+        } else if (sort == "Low to High") {
             toSort = { finalPrice: +1 }
-        } else if (sort == "max-price") {
+        } else if (sort == "High to Low") {
             toSort = { finalPrice: -1 }
         } else {
             toSort = { updatedAt: -1 }
