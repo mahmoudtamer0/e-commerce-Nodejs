@@ -19,9 +19,15 @@ const register = catchAsync(async (req, res, next) => {
     let posts = []
 
     const findUser = await User.findOne({ email: email })
+
+    if (findUser && findUser.provider === "google") {
+        return next(new ApiError(400, "This account was created using Google. Please login using Google. or you can click forgot password"));
+    }
+
     if (findUser && findUser.isEmailVerified == true) {
         return next(new ApiError(400, "this email already is use"));
     }
+
     const hash = await bcrypt.hash(password, 10)
     if (findUser && findUser.isEmailVerified == false) {
         findUser.name = name
@@ -67,6 +73,7 @@ const register = catchAsync(async (req, res, next) => {
 const verifyEmail = catchAsync(async (req, res, next) => {
     const crypto = require("crypto");
     const { otp, email } = req.body
+
     const hashedOtp = crypto
         .createHash("sha256")
         .update(otp)
@@ -77,6 +84,7 @@ const verifyEmail = catchAsync(async (req, res, next) => {
         return res.status(400).json({ message: "email and otp required" });
     }
 
+    console.log(email, otp)
     const user = await User.findOne({
         email,
         emailVerificationCode: hashedOtp,
@@ -113,20 +121,60 @@ const verifyEmail = catchAsync(async (req, res, next) => {
 
 })
 
-const login = catchAsync(async (req, res, next) => {
 
-
-    const { email, password } = req.body
+const resendOtp = catchAsync(async (req, res, next) => {
+    const { otp, hashedOtp, expires } = generateOTP()
+    const { email } = req.body;
+    console.log(email)
     const findUser = await User.findOne({ email: email })
 
     if (!findUser) {
         return next(new ApiError(404, "user not found"));
     }
 
+    findUser.emailVerificationCode = hashedOtp;
+    findUser.emailVerificationExpires = expires;
+
+    await findUser.save()
+
+    await sendEmail({
+        email: email,
+        subject: "Resend otp",
+        message: `
+                <div style="font-family: Arial; text-align: center;">
+                    <h2>Email Verification</h2>
+                    <p>Your verification code is:</p>
+                    <h1 style="letter-spacing: 5px;">${otp}</h1>
+                    <p>This code expires in 10 minutes.</p>
+                </div>
+            `,
+    });
+
+    return res.status(200).json({
+        status: "success",
+        message: "otp resended successfuly"
+    })
+})
+
+const login = catchAsync(async (req, res, next) => {
+
+    console.log("bode")
+    const { email, password } = req.body
+    const findUser = await User.findOne({ email: email })
+
+    if (!findUser) {
+        return next(new ApiError(404, "email or password not correct"));
+    }
+
     if (findUser.isEmailVerified != true) {
         return next(new ApiError(401, "email not veryfied"));
     }
-    const checkPass = await bcrypt.compare(password, findUser.password)
+
+    if (findUser && findUser.provider === "google") {
+        return next(new ApiError(400, "This account was created using Google. Please login using Google. or you can click forgot password"));
+    }
+
+    const checkPass = bcrypt.compare(password, findUser.password)
 
     if (!checkPass) {
         return next(new ApiError(401, "email or password not correct"));
@@ -152,6 +200,26 @@ const login = catchAsync(async (req, res, next) => {
     })
 
 })
+
+const googleCallback = catchAsync(async (req, res, next) => {
+    try {
+        const user = req.user;
+
+        const token = generateAccessToken(user.email, user._id, user.role)
+
+        // const token = jwt.sign(
+        //     { id: user._id, role: user.role },
+        //     process.env.JWT_SECRET,
+        //     { expiresIn: "7d" }
+        // );
+
+        res.redirect(`${process.env.CLIENT_BASE_URL}/auth/success?token=${token}`);
+
+    } catch (err) {
+        console.log(err)
+        res.redirect("http://localhost:5173/login");
+    }
+});
 
 const refreshTokenController = catchAsync(async (req, res, next) => {
 
@@ -364,6 +432,7 @@ const banUser = catchAsync(async (req, res, next) => {
 
 module.exports = {
     register,
+    resendOtp,
     login,
     userProfile,
     updateProfile,
@@ -372,5 +441,6 @@ module.exports = {
     logoutAllDevices,
     changePassword,
     banUser,
-    verifyEmail
+    verifyEmail,
+    googleCallback
 }

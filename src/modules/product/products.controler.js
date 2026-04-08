@@ -287,6 +287,64 @@ const deleteProduct = catchAsync(async (req, res, next) => {
 
 })
 
+const calculateCart = catchAsync(async (req, res, next) => {
+
+    const { cart } = req.body;
+
+    if (!cart) {
+        return next(new ApiError(400, "cart required"));
+    }
+
+    let subTotal = 0;
+    let delivery = 20;
+    let tax = 0.14;
+
+    const products = await Product.find({
+        _id: { $in: cart.map(item => item.id) }
+    });
+
+    let newItems = [];
+
+    for (let i = 0; i < cart.length; i++) {
+        const item = cart[i]
+        const product = products[i];
+        console.log("product:", product)
+        if (!product) {
+            return next(new ApiError(404, "not found this product"));
+        }
+        if (!item.quantity || item.quantity < 1) {
+            return next(new ApiError(400, "quantity required"));
+        }
+        subTotal = item.quantity * product.finalPrice;
+
+        newItems.push({
+            id: product.id,
+            title: product.title,
+            productImage: product.productImages[0].url,
+            quantity: item.quantity,
+            size: item.size,
+            discount: product.discount,
+            originalPrice: product.originalPrice * item.quantity,
+            totalPrice: item.quantity * product.finalPrice
+        })
+
+    }
+
+    const total = subTotal + delivery;
+
+    const totalCart = total + (total * tax);
+
+    return res.status(200).json({
+        status: "success",
+        newItems,
+        subTotal,
+        delivery,
+        tax,
+        totalCart
+    })
+
+})
+
 
 
 module.exports = {
@@ -296,5 +354,5 @@ module.exports = {
     deleteProduct,
     addManyProducts,
     getProduct,
-
+    calculateCart
 }

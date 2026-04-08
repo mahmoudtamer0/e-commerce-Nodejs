@@ -8,7 +8,7 @@ const generateOTP = () => {
         .update(otp)
         .digest("hex");
 
-    const expires = Date.now() + 1 * 60 * 1000;
+    const expires = Date.now() + 2 * 60 * 1000;
 
     return { otp, hashedOtp, expires };
 };

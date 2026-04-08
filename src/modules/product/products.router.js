@@ -1,7 +1,7 @@
 const express = require("express")
 const verifyToken = require("../../middlewares/verifyToken")
 const allowTo = require("../../middlewares/allowTo")
-const { addProduct, getAllProducts, updateProducts, deleteProduct, addManyProducts, getProduct } = require("./products.controler")
+const { addProduct, getAllProducts, updateProducts, deleteProduct, addManyProducts, getProduct, calculateCart } = require("./products.controler")
 const upload = require("../../middlewares/productsUpload");
 const { productsValidator, productsUpdateValidator } = require("../../middlewares/productsValidator");
 
@@ -17,6 +17,9 @@ router.route("/")
 
 router.route("/many")
     .post(addManyProducts)
+
+router.route("/calculate-cart")
+    .post(calculateCart)
 
 router.route("/:prodId")
     .patch(verifyToken, allowTo("ADMIN"),

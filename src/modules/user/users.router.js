@@ -1,9 +1,10 @@
 const express = require("express")
-const { register, login, userProfile, updateProfile, refreshTokenController, logout, changePassword, logoutAllDevices, banUser, verifyEmail } = require("./users.controler")
-const { userValidator, loginValidator, updateValidator } = require("../../middlewares/userValidator")
+const { register, login, userProfile, updateProfile, googleCallback, refreshTokenController, logout, changePassword, logoutAllDevices, banUser, verifyEmail, resendOtp } = require("./users.controler")
+const { userValidator, loginValidator } = require("../../middlewares/userValidator")
 const verifyToken = require("../../middlewares/verifyToken")
 const upload = require("../../middlewares/userUpload");
 const allowTo = require("../../middlewares/allowTo")
+const passport = require("passport");
 
 
 const router = express.Router()
@@ -17,8 +18,21 @@ router.route("/register")
 
 router.route("/verify-email")
     .post(verifyEmail)
+
+router.route("/resend-otp")
+    .post(resendOtp)
+
 router.route("/login")
     .post(loginValidator, login)
+
+router.get("/google",
+    passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+router.get("/google/callback",
+    passport.authenticate("google", { session: false }),
+    googleCallback
+);
 
 router.route("/me/update")
     .patch(verifyToken,

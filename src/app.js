@@ -24,7 +24,10 @@ app.use(express.json());
 app.use(mongoSanitize());
 app.use(xss());
 app.use(hpp());
+const passport = require("passport");
+require("./modules/user/passport");
 
+app.use(passport.initialize());
 
 //Rate limit
 const apiLimiter = rateLimit({
