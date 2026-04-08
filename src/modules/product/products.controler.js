@@ -299,15 +299,14 @@ const calculateCart = catchAsync(async (req, res, next) => {
     let delivery = 20;
     let tax = 0.14;
 
-    const products = await Product.find({
-        _id: { $in: cart.map(item => item.id) }
-    });
+
 
     let newItems = [];
 
     for (let i = 0; i < cart.length; i++) {
         const item = cart[i]
-        const product = products[i];
+
+        const product = await Product.findOne({ _id: item.id }).lean().select("id title finalPrice discount originalPrice productImages");
         console.log("product:", product)
         if (!product) {
             return next(new ApiError(404, "not found this product"));
@@ -315,10 +314,12 @@ const calculateCart = catchAsync(async (req, res, next) => {
         if (!item.quantity || item.quantity < 1) {
             return next(new ApiError(400, "quantity required"));
         }
-        subTotal = item.quantity * product.finalPrice;
+        subTotal += item.quantity * product.finalPrice;
+
+
 
         newItems.push({
-            id: product.id,
+            id: product._id,
             title: product.title,
             productImage: product.productImages[0].url,
             quantity: item.quantity,
@@ -329,7 +330,8 @@ const calculateCart = catchAsync(async (req, res, next) => {
         })
 
     }
-
+    console.log(cart)
+    console.log(subTotal)
     const total = subTotal + delivery;
 
     const totalCart = total + (total * tax);
