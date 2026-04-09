@@ -209,6 +209,6 @@ Designing MongoDB schemas for e-commerce systems
 👨‍💻 Author
 
 Mahmoud Tamer
-Backend Developer (Node.js)
+Fullstack Developer (Node.js , React.js)
 
 GitHub: https://github.com/mahmoudtamer0
