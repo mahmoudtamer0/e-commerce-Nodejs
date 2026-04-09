@@ -57,8 +57,17 @@ const getAllProducts = catchAsync(async (req, res, next) => {
             filter.type = ""
         }
     }
+    const hasSort =
+        sort &&
+        sort !== "undefined" &&
+        sort !== "" &&
+        sort !== "null";
 
-    if (sort) {
+
+    let products;
+
+    if (hasSort) {
+
         if (sort == "best-selling" || sort == "Most Popular") {
             toSort = { buys: -1 }
         } else if (sort == "on-sale") {
@@ -72,17 +81,24 @@ const getAllProducts = catchAsync(async (req, res, next) => {
         } else {
             toSort = { updatedAt: -1 }
         }
+
+        products = await Product.find(filter)
+            .skip(skip)
+            .limit(Number(limit))
+            .populate("category", "name")
+            .sort(toSort)
+            .select("-createdAt -updatedAt -__v")
+            .lean();
+
     } else {
-        toSort = { updatedAt: -1 }
+
+        products = await Product.aggregate([
+            { $match: filter },
+            { $sample: { size: limit } }
+        ]);
     }
 
-    const products = await Product.find(filter)
-        .skip(skip)
-        .limit(Number(limit))
-        .populate("category", "name")
-        .sort(toSort)
-        .select("-createdAt -updatedAt -__v")
-        .lean()
+
     const total = await Product.countDocuments(filter)
 
     return res.status(200).json({
@@ -288,7 +304,6 @@ const deleteProduct = catchAsync(async (req, res, next) => {
 })
 
 const calculateCart = catchAsync(async (req, res, next) => {
-
     const { cart } = req.body;
 
     if (!cart) {
@@ -304,19 +319,30 @@ const calculateCart = catchAsync(async (req, res, next) => {
     let newItems = [];
 
     for (let i = 0; i < cart.length; i++) {
+        let available = false;
         const item = cart[i]
-
-        const product = await Product.findOne({ _id: item.id }).lean().select("id title finalPrice discount originalPrice productImages");
-        console.log("product:", product)
+        console.log(item)
+        const product = await Product.findOne({ _id: item.id }).lean().select("id title finalPrice discount originalPrice productImages variants");
         if (!product) {
             return next(new ApiError(404, "not found this product"));
         }
         if (!item.quantity || item.quantity < 1) {
             return next(new ApiError(400, "quantity required"));
         }
+
+        const variant = product.variants.find(variant => variant.size.toLowerCase() == item.size.toLowerCase())
+
+        console.log(variant.stock, item.quantity)
+        if (!variant || variant.stock < item.quantity) {
+            return res.status(400).json({
+                status: "error",
+                message: `stock available for this product is : ${variant.stock}`,
+                productId: product._id,
+                size: variant.size
+            })
+        }
+        available = true
         subTotal += item.quantity * product.finalPrice;
-
-
 
         newItems.push({
             id: product._id,
@@ -324,25 +350,57 @@ const calculateCart = catchAsync(async (req, res, next) => {
             productImage: product.productImages[0].url,
             quantity: item.quantity,
             size: item.size,
+            stock: variant.stock,
             discount: product.discount,
             originalPrice: product.originalPrice * item.quantity,
-            totalPrice: item.quantity * product.finalPrice
+            totalPrice: item.quantity * product.finalPrice,
+            available: available
         })
 
     }
-    console.log(cart)
-    console.log(subTotal)
-    const total = subTotal + delivery;
 
-    const totalCart = total + (total * tax);
+    const total = subTotal + delivery;
 
     return res.status(200).json({
         status: "success",
         newItems,
         subTotal,
         delivery,
-        tax,
-        totalCart
+        taxPercent: "14%",
+        tax: Math.floor(subTotal * tax),
+        totalCart: subTotal + delivery + Math.floor(subTotal * tax)
+    })
+
+})
+
+
+const addToCart = catchAsync(async (req, res, next) => {
+
+    const { productId, quantity, size } = req.body;
+
+    const product = await Product.findOne({ _id: productId }).lean().select("id title finalPrice discount originalPrice productImages variants");
+
+    if (!product) {
+        return next(new ApiError(404, "not found this product"));
+    }
+    const variant = product.variants.find(variant => variant.size.toLowerCase() == size.toLowerCase())
+
+    if (!variant || variant.stock < quantity) {
+        return next(new ApiError(400, `stock available for this product is : ${variant.stock}`));
+    }
+
+    return res.status(200).json({
+        status: "success",
+        product: {
+            id: product._id,
+            title: product.title,
+            productImage: product.productImages[0].url,
+            quantity: quantity,
+            size: size,
+            discount: product.discount,
+            originalPrice: product.originalPrice * quantity,
+            totalPrice: quantity * product.finalPrice
+        }
     })
 
 })
@@ -356,5 +414,5 @@ module.exports = {
     deleteProduct,
     addManyProducts,
     getProduct,
-    calculateCart
+    calculateCart,
 }

@@ -41,7 +41,7 @@ router.route("/me/update")
             { name: "posts", maxCount: 5 }
         ]),
         updateProfile)
-router.get("/refresh", refreshTokenController);
+router.post("/refresh", refreshTokenController);
 router.post("/logout", logout);
 router.patch("/changepassword", verifyToken, changePassword, logoutAllDevices);
 router.patch("/ban/:userId", verifyToken, allowTo("ADMIN"), banUser)

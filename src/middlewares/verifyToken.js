@@ -24,7 +24,7 @@ const verifyToken = catchAsync(async (req, res, next) => {
         if (err.name === "TokenExpiredError") {
             return next(new ApiError(401, "Session expired. Please login again."));
         }
-        return next(new ApiError(403, "Invalid token"));
+        return next(new ApiError(401, "Invalid token"));
     }
 
     const user = await User.findById(decoded.id);

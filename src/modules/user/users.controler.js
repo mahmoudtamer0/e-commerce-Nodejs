@@ -206,6 +206,18 @@ const googleCallback = catchAsync(async (req, res, next) => {
         const user = req.user;
 
         const token = generateAccessToken(user.email, user._id, user.role)
+        const refreshToken = generateRefreshToken(user._id)
+        await Session.create({
+            userId: user._id,
+            refreshToken: refreshToken,
+            device: req.headers["user-agent"]
+        });
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
         // const token = jwt.sign(
         //     { id: user._id, role: user.role },
@@ -213,15 +225,16 @@ const googleCallback = catchAsync(async (req, res, next) => {
         //     { expiresIn: "7d" }
         // );
 
-        res.redirect(`${process.env.CLIENT_BASE_URL}/auth/success?token=${token}`);
+        res.redirect(`https://shop-co-webapp.vercel.app/auth/success?token=${token}`);
 
     } catch (err) {
         console.log(err)
-        res.redirect("http://localhost:5173/login");
+        res.redirect("https://shop-co-webapp.vercel.app/login");
     }
 });
 
 const refreshTokenController = catchAsync(async (req, res, next) => {
+    console.log("refresh")
 
     const token = req.cookies.refreshToken;
 
@@ -229,15 +242,16 @@ const refreshTokenController = catchAsync(async (req, res, next) => {
         return next(new ApiError(401, "No refresh token"));
     }
 
-    const session = await Session.findOne({
-        refreshToken: req.cookies.refreshToken
-    });
+    // const session = await Session.findOne({
+    //     refreshToken: req.cookies.refreshToken
+    // });
 
-    if (!session) {
-        return next(new ApiError(401, "Session expired. Please login again."));
-    }
+    // if (!session) {
+    //     return next(new ApiError(401, "Session expired. Please login again."));
+    // }
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+        console.log("refresh")
 
         if (err) {
             if (err.name == "TokenExpiredError") {

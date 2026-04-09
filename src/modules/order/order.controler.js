@@ -10,37 +10,63 @@ const sendEmail = require("../../utilities/sendEmails");
 const addOrder = catchAsync(async (req, res, next) => {
 
 
-    const { shippingAddress, paymentMethod, items } = req.body
+    const { cart, shippingAddress, paymentMethod } = req.body
 
     const user = req.user
 
-    let totalPrice = 0
+    if (!cart) {
+        return next(new ApiError(400, "cart required"));
+    }
 
-    const products = await Promise.all(items.map(item => Product.findById(item.productId)));
+    let subTotal = 0;
+    let delivery = 20;
+    let tax = 0.14;
+
+
+    const products = await Promise.all(cart.map(item => Product.findById(item.id)));
 
     for (let i = 0; i < products.length; i++) {
-        const product = products[i];
+        const product = products[i]
+        const item = cart[i]
         if (!product) {
             return next(new ApiError(404, "not found this product"));
         }
-        if (product.stock < items[i].quantity) {
-            return next(new ApiError(404, "no available stock for"));
+
+        if (!item.quantity || item.quantity < 1) {
+            return next(new ApiError(400, "quantity required"));
         }
-        totalPrice += product.finalPrice * items[i].quantity;
+
+        const variant = product.variants.find(variant => variant.size.toLowerCase() == item.size.toLowerCase())
+
+        if (!variant || variant.stock < item.quantity) {
+            return res.status(404).json({
+                status: "error",
+                message: `stock available for this product is : ${variant.stock}`,
+                productId: product._id,
+                size: variant.size
+            })
+        }
+
+        subTotal += item.quantity * product.finalPrice;
     }
+
+
 
     const order = new Order({
         user: user.id,
-        totalPrice,
         shippingAddress,
-        paymentMethod
+        paymentMethod,
+        subTotal: subTotal,
+        delivery: delivery,
+        taxPayed: Math.floor(subTotal * tax),
+        totalPrice: subTotal + delivery + Math.floor(subTotal * tax)
     })
 
 
     await order.save()
 
-    for (const item of items) {
-        const product = products.find(prod => prod._id.toString() == item.productId)
+    for (const item of cart) {
+        const product = products.find(prod => prod._id.toString() == item.id)
         const orderItem = new OrderItem({
             order: order._id,
             product: product._id,
@@ -52,7 +78,19 @@ const addOrder = catchAsync(async (req, res, next) => {
 
         await orderItem.save()
 
-        product.stock -= item.quantity;
+        const variant = product.variants.find(
+            (v) => v.size === item.size
+        );
+
+        if (!variant) {
+            throw new Error(`Size ${item.size} not found`);
+        }
+
+        if (variant.stock < item.quantity) {
+            throw new Error(`Stock not enough for size ${item.size}`);
+        }
+
+        variant.stock -= item.quantity;
         product.buys += 1;
         await product.save();
     }
@@ -80,9 +118,6 @@ const addOrder = catchAsync(async (req, res, next) => {
         status: "success",
         data: order
     })
-
-
-
 
 })
 

@@ -5,16 +5,16 @@ const ApiError = require("../utilities/ApiError");
 const orderValidator = catchAsync(async (req, res, next) => {
 
 
-    const { shippingAddress, paymentMethod, items } = req.body;
+    const { shippingAddress, paymentMethod, cart } = req.body;
 
     // items لازم تكون array ومش فاضية
-    if (!Array.isArray(items) || items.length === 0) {
+    if (!Array.isArray(cart) || cart.length === 0) {
         return next(new ApiError(400, "Order must contain at least one item"));
     }
 
     // التحقق من كل item
-    for (const item of items) {
-        if (!item.productId || !mongoose.Types.ObjectId.isValid(item.productId)) {
+    for (const item of cart) {
+        if (!item.id) {
             return next(new ApiError(400, "Invalid productId"));
         }
 

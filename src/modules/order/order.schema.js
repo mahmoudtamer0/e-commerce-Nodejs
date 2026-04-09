@@ -8,6 +8,19 @@ const orderSchema = new mongoose.Schema({
         required: true
     },
 
+    subTotal: {
+        type: Number,
+        required: true
+    },
+    delivery: {
+        type: Number,
+        required: true
+    },
+    taxPayed: {
+        type: Number,
+        required: true
+    },
+
     totalPrice: {
         type: Number,
         required: true
@@ -38,8 +51,6 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: [
             "pending",
-            "confirmed",
-            "processing",
             "shipped",
             "delivered",
             "cancelled"
