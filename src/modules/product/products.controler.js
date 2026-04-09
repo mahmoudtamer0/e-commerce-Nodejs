@@ -322,7 +322,7 @@ const calculateCart = catchAsync(async (req, res, next) => {
         let available = false;
         const item = cart[i]
 
-        const product = await Product.findOne({ _id: item.id }).lean().select("id title finalPrice discount originalPrice productImages");
+        const product = await Product.findOne({ _id: item.id }).lean().select("id title finalPrice discount originalPrice productImages variants");
         console.log("product:", product)
         if (!product) {
             return next(new ApiError(404, "not found this product"));
