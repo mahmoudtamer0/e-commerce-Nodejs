@@ -1,7 +1,7 @@
 const Order = require("./order.schema")
 const Product = require("../product/products.schema")
 const OrderItem = require("./orderItems.schema")
-
+const mongoose = require("mongoose");
 const catchAsync = require("../../utilities/catchAsync");
 const ApiError = require("../../utilities/ApiError");
 const sendEmail = require("../../utilities/sendEmails");
@@ -67,16 +67,7 @@ const addOrder = catchAsync(async (req, res, next) => {
 
     for (const item of cart) {
         const product = products.find(prod => prod._id.toString() == item.id)
-        const orderItem = new OrderItem({
-            order: order._id,
-            product: product._id,
-            title: product.title,
-            image: product.productImages.length > 0 ? product.productImages[0] : "",
-            price: product.finalPrice,
-            quantity: item.quantity
-        })
 
-        await orderItem.save()
 
         const variant = product.variants.find(
             (v) => v.size === item.size
@@ -89,6 +80,18 @@ const addOrder = catchAsync(async (req, res, next) => {
         if (variant.stock < item.quantity) {
             throw new Error(`Stock not enough for size ${item.size}`);
         }
+
+        const orderItem = new OrderItem({
+            order: order._id,
+            product: product._id,
+            title: product.title,
+            size: variant.size,
+            image: product.productImages.length > 0 ? product.productImages[0].url : "",
+            price: product.finalPrice,
+            quantity: item.quantity
+        })
+
+        await orderItem.save()
 
         variant.stock -= item.quantity;
         product.buys += 1;
@@ -288,6 +291,50 @@ const editOrderStatuse = catchAsync(async (req, res, next) => {
 
 })
 
+const getUserOrders = catchAsync(async (req, res, next) => {
+
+    const user = req.user;
+
+    const { status } = req.query;
+    let filter = {}
+
+    if (status && status != "") {
+        if (status == "All") {
+            console.log(status)
+            filter.status;
+        } else {
+            filter.status = status
+        }
+    }
+
+    const orders = await Order.aggregate([
+        {
+            $match: {
+                user: new mongoose.Types.ObjectId(user.id),
+                ...filter
+            },
+        },
+        {
+            $lookup: {
+                from: "orderitems",
+                localField: "_id",
+                foreignField: "order",
+                as: "items"
+            }
+        },
+        {
+            $sort: { createdAt: -1 }
+        }
+    ]);
+
+
+    return res.status(200).json({
+        status: "success",
+        orders: orders
+    })
+
+})
+
 const getallOrders = catchAsync(async (req, res, next) => {
 
     const {
@@ -395,5 +442,6 @@ module.exports = {
     editOrder,
     editOrderStatuse,
     getallOrders,
-    getOrderDetails
+    getOrderDetails,
+    getUserOrders
 }
