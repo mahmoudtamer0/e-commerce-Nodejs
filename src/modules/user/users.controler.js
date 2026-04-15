@@ -225,11 +225,11 @@ const googleCallback = catchAsync(async (req, res, next) => {
         //     { expiresIn: "7d" }
         // );
 
-        res.redirect(`https://shop-co-webapp.vercel.app/auth/success?token=${token}`);
+        res.redirect(`${process.env.CLIENT_BASE_URL}/auth/success?token=${token}`);
 
     } catch (err) {
         console.log(err)
-        res.redirect("https://shop-co-webapp.vercel.app/login");
+        res.redirect(`${process.env.CLIENT_BASE_URL}/login`);
     }
 });
 
