@@ -41,11 +41,7 @@ npm install
 
 Create a .env file
 
-JWT_SECRET=e-commerce@2025Secure_Token!9fA3kXqPzR
-DB_URL=mongodb+srv://mahmoudtamerdeveloper_db_user:mahmoudtamer2004DB@mahmoud.6hcrqom.mongodb.net/E-commerce
-EMAIL_PASS=xsmtpsib-0952270e579230f5ddb3b88227b43d11fa637b916fc9800699592ce0b38b68ca-OmT1Hpzqqa5mz76I
-EMAIL_USER=a3662f001@smtp-brevo.com
-BREVO_API=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
+
 
 Run the server
 node src/server.js
