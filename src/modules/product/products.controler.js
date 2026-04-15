@@ -342,7 +342,10 @@ const calculateCart = catchAsync(async (req, res, next) => {
                 size: variant.size
             })
         }
+        available = true
         subTotal += item.quantity * product.finalPrice;
+        subTotal += item.quantity * product.finalPrice;
+
 
 
         newItems.push({
@@ -396,6 +399,9 @@ const addToCart = catchAsync(async (req, res, next) => {
             productImage: product.productImages[0].url,
             quantity: quantity,
             size: size,
+            discount: product.discount,
+            originalPrice: product.originalPrice * quantity,
+            totalPrice: quantity * product.finalPrice
         }
     })
 
@@ -411,5 +417,4 @@ module.exports = {
     addManyProducts,
     getProduct,
     calculateCart,
-    addToCart
 }
