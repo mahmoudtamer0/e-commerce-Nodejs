@@ -70,7 +70,7 @@ app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/products', productsRouter)
 app.use('/api/v1/orders', orderRouter)
 app.use('/api/v1/review', reviewRouter)
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //Global Error Handler
 app.use(globalErrorHandler);
