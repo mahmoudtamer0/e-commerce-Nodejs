@@ -1,226 +1,561 @@
-# E-commerce Backend API
+# 🛍️ Shop-Co — E-Commerce REST API
 
-A fully-featured backend API for an e-commerce platform built with Node.js, Express, and MongoDB.  
-Supports products, orders, categories, reviews, and user authentication.
+> A full-featured e-commerce backend built with Node.js & Express, supporting authentication, product management, orders, reviews, and more.
 
----
-
-## 🚀 Features
-
-- User Authentication (JWT)
-- Product Management (CRUD)
-- Order Management
-- Category Management
-- Product Reviews
-- Admin-only protected routes
-- Image uploads (Cloudinary)
-- Input validation
+[![Portfolio](https://img.shields.io/badge/Portfolio-mahmoudtamer-black?style=for-the-badge&logo=vercel)](https://mahmoud-tamer-portfolio.vercel.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-mahmoudtamer0-181717?style=for-the-badge&logo=github)](https://github.com/mahmoudtamer0)
+[![Swagger Docs](https://img.shields.io/badge/API%20Docs-Swagger-85EA2D?style=for-the-badge&logo=swagger)](http://localhost:3000/api-docs)
 
 ---
 
-## 🛠 Tech Stack
+## 📋 Table of Contents
 
-- Node.js
-- Express.js
-- MongoDB / Mongoose
-- JWT Authentication
-- Multer for file uploads
-
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Swagger API Docs](#swagger-api-docs)
+- [API Reference](#api-reference)
+  - [Auth & Users](#auth--users)
+  - [Products](#products)
+  - [Orders](#orders)
+  - [Reviews](#reviews)
+  - [Categories](#categories)
+- [Authentication](#authentication)
+- [Roles & Permissions](#roles--permissions)
+- [File Uploads](#file-uploads)
+- [Rate Limiting](#rate-limiting)
+- [Error Handling](#error-handling)
 
 ---
 
-## ⚙️ Installation
+## Overview
 
-1. Clone the repository
+**Shop-Co** is a RESTful e-commerce API that handles the full shopping lifecycle — from user registration and OAuth login to product browsing, cart management, order placement, and admin controls.
 
-git clone https://github.com/YOUR_USERNAME/ecommerce-api
+Key capabilities:
+- 🔐 JWT-based auth with refresh tokens + Google OAuth2
+- 📦 Product CRUD with multi-image upload
+- 🛒 Cart calculation and order management
+- ⭐ Product reviews
+- 🏷️ Category management
+- 🛡️ Role-based access control (USER / ADMIN)
+- 📧 Email verification via OTP
 
-Install dependencies
+---
 
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js |
+| Framework | Express.js |
+| Auth | JWT + Passport.js (Google OAuth2) |
+| File Storage | Multer (multi-file upload) |
+| Validation | Custom validators (middleware) |
+| Rate Limiting | express-rate-limit |
+| API Docs | Swagger (swagger-jsdoc + swagger-ui-express) |
+
+---
+
+## Getting Started
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/mahmoudtamer0/shop-co.git
+cd shop-co
+
+# 2. Install dependencies
 npm install
 
-Create a .env file
+# 3. Set up environment variables
+cp .env.example .env
 
-JWT_SECRET=YOURS
-DB_URL=YOURS
-EMAIL_PASS=YOURS
-EMAIL_USER=YOURS
-BREVO_API=YOURS
-NODE_ENV=YOURS
-PORT=YOURS
-CLOUD_NAME=YOURS
-CLOUD_API_KEY=YOURS
-CLOUD_API_SECRET=YOURS
+# 4. Start the development server
+npm run dev
+```
 
-SERVER_BASE_URL=YOURS
-CLIENT_BASE_URL=http://localhost:5173
+---
 
-GOOGLE_CLIENT_ID=YOURS
+## Environment Variables
 
-GOOGLE_CLIENT_SECRET=YOURS
+Create a `.env` file in the root directory:
 
-Run the server
-node src/server.js
+```env
+# Server
+PORT=3000
+NODE_ENV=development
 
-📡 API Endpoints
+# Database
+MONGO_URI=mongodb://localhost:27017/shop-co
 
-📡| Method | Endpoint                       | Description                                        | Auth   |
-| ------ | ------------------------------ | -------------------------------------------------- | ------ |
-| POST   | `/api/v1/users/register`       | Register a new user (upload profile image + posts) | Public |
-| POST   | `/api/v1/users/verify-email`   | Verify user email                                  | Public |
-| POST   | `/api/v1/users/login`          | Login with email & password                        | Public |
-| GET    | `/api/v1/users/refresh`        | Refresh access token                               | User   |
-| POST   | `/api/v1/users/logout`         | Logout current session                             | User   |
-| PATCH  | `/api/v1/users/changepassword` | Change password & logout all devices               | User   |
-| PATCH  | `/api/v1/users/me/update`      | Update user profile (image + posts)                | User   |
-| GET    | `/api/v1/users/:userId`        | Get public profile of a user                       | Public |
-| PATCH  | `/api/v1/users/ban/:userId`    | Ban a user                                         | Admin  |
+# JWT
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=7d
+JWT_REFRESH_SECRET=your_refresh_secret
+JWT_REFRESH_EXPIRES_IN=30d
 
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/api/v1/users/google/callback
 
+# Email (for OTP)
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USER=your@email.com
+MAIL_PASS=your_mail_password
+```
 
-| Method | Endpoint                          | Description                          | Auth   |
-| ------ | --------------------------------- | ------------------------------------ | ------ |
-| GET    | `/api/v1/products`                | Get all products                     | Public |
-| POST   | `/api/v1/products`                | Add a new product (max 5 images)     | Admin  |
-| PATCH  | `/api/v1/products/:prodId`        | Update product details (with images) | Admin  |
-| PATCH  | `/api/v1/products/:prodId/delete` | Delete a product                     | Admin  |
+---
 
+## Swagger API Docs
 
-POST /api/v1/products
+This project uses **Swagger UI** for interactive API documentation. Once the server is running, visit:
+
+```
+http://localhost:3000/api-docs
+```
+
+### Setup
+
+**1. Install packages:**
+
+```bash
+npm install swagger-jsdoc swagger-ui-express
+```
+
+**2. Add to `app.js`:**
+
+```js
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Shop-Co API',
+      version: '1.0.0',
+      description: 'Full-featured E-Commerce REST API',
+      contact: {
+        name: 'Mahmoud Tamer',
+        url: 'https://mahmoud-tamer-portfolio.vercel.app/',
+      },
+    },
+    servers: [
+      { url: 'http://localhost:3000/api/v1', description: 'Development' },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+  },
+  apis: ['./src/modules/**/*.router.js'],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+```
+
+**3. Annotate your routes with JSDoc comments:**
+
+```js
+/**
+ * @swagger
+ * /users/login:
+ *   post:
+ *     summary: Login with email and password
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 example: yourpassword
+ *     responses:
+ *       200:
+ *         description: Returns accessToken and refreshToken
+ *       401:
+ *         description: Invalid credentials
+ */
+router.post("/login", loginValidator, login);
+```
+
+> 💡 Repeat this pattern for every route — Swagger auto-generates the interactive UI from these comments.
+
+---
+
+## API Reference
+
+**Base URL:** `http://localhost:3000/api/v1`
+
+---
+
+### Auth & Users
+
+| Method | Endpoint | Auth | Role | Description |
+|--------|----------|------|------|-------------|
+| `POST` | `/users/register` | ❌ | — | Register a new user (supports image + posts upload) |
+| `POST` | `/users/verify-email` | ❌ | — | Verify email using OTP |
+| `POST` | `/users/resend-otp` | ❌ | — | Resend email verification OTP |
+| `POST` | `/users/login` | ❌ | — | Login with email & password |
+| `GET` | `/users/google` | ❌ | — | Initiate Google OAuth2 login |
+| `GET` | `/users/google/callback` | ❌ | — | Google OAuth2 callback |
+| `POST` | `/users/refresh` | ❌ | — | Refresh access token |
+| `POST` | `/users/logout` | ❌ | — | Logout current session |
+| `PATCH` | `/users/me/update` | ✅ | USER | Update profile (supports image + posts upload) |
+| `PATCH` | `/users/changepassword` | ✅ | USER | Change password & logout all devices |
+| `PATCH` | `/users/ban/:userId` | ✅ | ADMIN | Ban a user |
+| `GET` | `/users/:userId` | ❌ | — | Get public user profile |
+
+---
+
+#### Register
+
+```http
+POST /api/v1/users/register
+Content-Type: multipart/form-data
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | ✅ | Full name |
+| `email` | string | ✅ | Valid email address |
+| `password` | string | ✅ | Min 8 characters |
+| `image` | file | ❌ | Profile picture (max 1) |
+| `posts` | file[] | ❌ | Post images (max 5) |
+
+**Response `201`:**
+```json
 {
-  "name": "Wireless Mouse",
-  "price": 25,
-  "category": "catId",
-  "description": "High-quality wireless mouse"
+  "message": "Registration successful. Check your email for OTP.",
+  "userId": "64abc..."
 }
+```
+
+---
+
+#### Login
+
+```http
+POST /api/v1/users/login
+Content-Type: application/json
+```
+
+```json
 {
-  "status": "success",
-  "data": {
-    "product": {
-      "_id": "6412a8f6c4e3...",
-      "name": "Wireless Mouse",
-      "price": 25,
-      "category": "Electronics",
-      "images": [],
-      "createdAt": "2026-03-11T10:00:00.000Z"
-    }
-  }
+  "email": "user@example.com",
+  "password": "yourpassword"
 }
+```
 
-Orders
-| Method | Endpoint                         | Description         | Auth  |
-| ------ | -------------------------------- | ------------------- | ----- |
-| GET    | `/api/v1/orders`                 | Get all orders      | Admin |
-| POST   | `/api/v1/orders`                 | Create a new order  | User  |
-| GET    | `/api/v1/orders/:orderId`        | Get order details   | User  |
-| PATCH  | `/api/v1/orders/:orderId`        | Edit an order       | User  |
-| PATCH  | `/api/v1/orders/:orderId/status` | Update order status | Admin |
-
-
-Example Request: Create Order
-
-POST /api/v1/orders
+**Response `200`:**
+```json
 {
-  "products": [
-    { "productId": "6412a8f6c4e3...", "quantity": 2 }
+  "accessToken": "eyJ...",
+  "refreshToken": "eyJ..."
+}
+```
+
+> ⚠️ Login endpoint is **rate-limited** — see [Rate Limiting](#rate-limiting).
+
+---
+
+### Products
+
+| Method | Endpoint | Auth | Role | Description |
+|--------|----------|------|------|-------------|
+| `POST` | `/products/` | ✅ | ADMIN | Add a new product (up to 5 images) |
+| `GET` | `/products/` | ❌ | — | Get all products |
+| `GET` | `/products/:prodId` | ❌ | — | Get single product details |
+| `PATCH` | `/products/:prodId` | ✅ | ADMIN | Update a product (up to 5 images) |
+| `DELETE` | `/products/:prodId` | ✅ | ADMIN | Delete a product |
+| `POST` | `/products/many` | ❌ | — | Bulk insert products |
+| `POST` | `/products/add-to-cart` | ❌ | — | Add product to cart |
+| `POST` | `/products/calculate-cart` | ❌ | — | Calculate cart totals |
+
+---
+
+#### Add Product
+
+```http
+POST /api/v1/products/
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | ✅ | Product name |
+| `price` | number | ✅ | Product price |
+| `description` | string | ✅ | Product description |
+| `category` | string | ✅ | Category ID |
+| `stock` | number | ✅ | Available quantity |
+| `productImages` | file[] | ❌ | Up to 5 product images |
+
+---
+
+#### Calculate Cart
+
+```http
+POST /api/v1/products/calculate-cart
+Content-Type: application/json
+```
+
+```json
+{
+  "items": [
+    { "productId": "64abc...", "quantity": 2 },
+    { "productId": "64def...", "quantity": 1 }
+  ]
+}
+```
+
+---
+
+### Orders
+
+| Method | Endpoint | Auth | Role | Description |
+|--------|----------|------|------|-------------|
+| `POST` | `/orders/` | ✅ | USER | Place a new order |
+| `GET` | `/orders/` | ✅ | ADMIN | Get all orders |
+| `GET` | `/orders/my-orders` | ✅ | USER | Get current user's orders |
+| `GET` | `/orders/:orderId` | ✅ | USER | Get order details |
+| `PATCH` | `/orders/:orderId` | ✅ | USER | Edit an order |
+| `PATCH` | `/orders/:orderId/status` | ✅ | ADMIN | Update order status |
+
+---
+
+#### Place Order
+
+```http
+POST /api/v1/orders/
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+```json
+{
+  "items": [
+    { "productId": "64abc...", "quantity": 2 }
   ],
-  "shippingAddress": "123 Street, Cairo, Egypt"
-}
-
-Example Response
-
-{
-  "status": "success",
-  "data": {
-    "order": {
-      "_id": "6423b1f7d5e9...",
-      "user": "6411f2a3c5b2...",
-      "products": [
-        { "productId": "6412a8f6c4e3...", "quantity": 2 }
-      ],
-      "status": "pending",
-      "totalPrice": 50,
-      "createdAt": "2026-03-11T10:15:00.000Z"
-    }
+  "shippingAddress": {
+    "street": "123 Main St",
+    "city": "Cairo",
+    "country": "Egypt"
   }
 }
+```
 
+---
 
-Categories
+#### Order Status Values
 
-| Method | Endpoint                    | Description        | Auth   |
-| ------ | --------------------------- | ------------------ | ------ |
-| GET    | `/api/v1/categories`        | Get all categories | Public |
-| POST   | `/api/v1/categories`        | Add a new category | Admin  |
-| PATCH  | `/api/v1/categories/:catId` | Update category    | Admin  |
-| DELETE | `/api/v1/categories/:catId` | Delete category    | Admin  |
+| Status | Description |
+|--------|-------------|
+| `PENDING` | Order placed, awaiting confirmation |
+| `CONFIRMED` | Order confirmed by admin |
+| `SHIPPED` | Order has been shipped |
+| `DELIVERED` | Order delivered to customer |
+| `CANCELLED` | Order was cancelled |
 
+---
 
-Example Request: Add Category
+### Reviews
 
-POST /api/v1/categories
-{
-  "name": "Electronics"
-}
+| Method | Endpoint | Auth | Role | Description |
+|--------|----------|------|------|-------------|
+| `POST` | `/review/:prodId` | ✅ | USER | Add a review for a product |
 
-Example Response
+---
 
-{
-  "status": "success",
-  "data": {
-    "category": {
-      "_id": "6412c0f9d4e5...",
-      "name": "Electronics",
-      "createdAt": "2026-03-11T10:20:00.000Z"
-    }
-  }
-}
+#### Add Review
 
+```http
+POST /api/v1/review/:prodId
+Authorization: Bearer <token>
+Content-Type: application/json
+```
 
-Reviews
-| Method | Endpoint                           | Description                | Auth |
-| ------ | ---------------------------------- | -------------------------- | ---- |
-| POST   | `/api/v1/products/:prodId/reviews` | Add a review for a product | User |
-
-
-Example Request: Add Review
-
-POST /api/v1/products/6412a8f6c4e3/reviews
+```json
 {
   "rating": 5,
-  "comment": "Excellent product!"
+  "comment": "Great product, highly recommended!"
 }
+```
 
-Example Response
+---
 
+### Categories
+
+| Method | Endpoint | Auth | Role | Description |
+|--------|----------|------|------|-------------|
+| `GET` | `/categories/` | ❌ | — | Get all categories |
+| `POST` | `/categories/` | ✅ | ADMIN | Add a new category |
+| `PATCH` | `/categories/:catId` | ✅ | ADMIN | Update a category |
+| `DELETE` | `/categories/:catId` | ✅ | ADMIN | Delete a category |
+
+---
+
+## Authentication
+
+This API uses **JWT Bearer Token** authentication.
+
+Include the token in the `Authorization` header for protected routes:
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Token Refresh Flow
+
+```
+POST /api/v1/users/refresh
+Body: { "refreshToken": "your_refresh_token" }
+```
+
+Returns a new `accessToken` without requiring re-login.
+
+### Google OAuth Flow
+
+```
+1. GET  /api/v1/users/google              → Redirects to Google
+2. GET  /api/v1/users/google/callback     → Google redirects here
+3. API returns { accessToken, refreshToken }
+```
+
+---
+
+## Roles & Permissions
+
+| Role | Permissions |
+|------|-------------|
+| `USER` | View products, place orders, write reviews, manage own profile |
+| `ADMIN` | All USER permissions + manage products, categories, orders, and ban users |
+
+---
+
+## File Uploads
+
+File uploads are handled via **Multer** with the following rules:
+
+| Endpoint | Field Name | Max Files | Notes |
+|----------|------------|-----------|-------|
+| `/users/register` | `image` | 1 | Profile picture |
+| `/users/register` | `posts` | 5 | Post images |
+| `/users/me/update` | `image` | 1 | Profile picture |
+| `/users/me/update` | `posts` | 5 | Post images |
+| `/products/` (POST) | `productImages` | 5 | Product images |
+| `/products/:prodId` (PATCH) | `productImages` | 5 | Product images |
+
+All uploads use `multipart/form-data`.
+
+---
+
+## Rate Limiting
+
+The login endpoint is protected against brute-force attacks:
+
+| Endpoint | Limit |
+|----------|-------|
+| `POST /api/v1/users/login` | Restricted (configured via `authLimiter`) |
+
+Exceeding the limit returns:
+```json
 {
-  "status": "success",
-  "data": {
-    "review": {
-      "_id": "6434d2f6a7c9...",
-      "product": "6412a8f6c4e3...",
-      "user": "6411f2a3c5b2...",
-      "rating": 5,
-      "comment": "Excellent product!",
-      "createdAt": "2026-03-11T10:25:00.000Z"
-    }
-  }
+  "status": "error",
+  "message": "Too many login attempts. Please try again later."
 }
-📌 Key Learning Outcomes
+```
 
-Building RESTful APIs with Node.js and Express
+---
 
-JWT authentication and role-based authorization
+## Error Handling
 
-Handling file uploads with Multer and Cloudinary
+All errors follow a consistent response format:
 
-Structuring scalable backend projects
+```json
+{
+  "status": "error",
+  "message": "Descriptive error message",
+  "errors": [ ... ]
+}
+```
 
-Designing MongoDB schemas for e-commerce systems
+| Status Code | Meaning |
+|-------------|---------|
+| `400` | Bad Request / Validation Error |
+| `401` | Unauthorized — missing or invalid token |
+| `403` | Forbidden — insufficient role |
+| `404` | Resource Not Found |
+| `429` | Too Many Requests |
+| `500` | Internal Server Error |
 
-👨‍💻 Author
+---
 
-Mahmoud Tamer
-Fullstack Developer (Node.js , React.js)
+## 📁 Project Structure
 
-GitHub: https://github.com/mahmoudtamer0
+```
+shop-co/
+├── src/
+│   ├── modules/
+│   │   ├── users/
+│   │   │   ├── user.router.js
+│   │   │   ├── user.controller.js
+│   │   │   └── user.validator.js
+│   │   ├── products/
+│   │   │   ├── product.router.js
+│   │   │   ├── product.controller.js
+│   │   │   └── product.validator.js
+│   │   ├── orders/
+│   │   │   ├── order.router.js
+│   │   │   ├── order.controller.js
+│   │   │   └── order.validator.js
+│   │   ├── reviews/
+│   │   │   ├── review.router.js
+│   │   │   └── review.controller.js
+│   │   └── categories/
+│   │       ├── category.router.js
+│   │       └── category.controller.js
+│   ├── middleware/
+│   │   ├── verifyToken.js
+│   │   ├── allowTo.js
+│   │   └── upload.js
+│   └── app.js
+├── .env.example
+├── package.json
+└── README.md
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Author
+
+**Mahmoud Tamer**
+
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-black?style=flat-square&logo=vercel)](https://mahmoud-tamer-portfolio.vercel.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-mahmoudtamer0-181717?style=flat-square&logo=github)](https://github.com/mahmoudtamer0)
+
+---
+
+*Built with ❤️ by Mahmoud Tamer*
