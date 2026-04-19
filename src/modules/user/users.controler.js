@@ -205,7 +205,7 @@ const googleCallback = catchAsync(async (req, res, next) => {
     try {
         const user = req.user;
 
-        const token = generateAccessToken(user.email, user._id, user.role)
+        const token = generateAccessToken(user.email, user._id, user.role, user.name)
         const refreshToken = generateRefreshToken(user._id)
         await Session.create({
             userId: user._id,
