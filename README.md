@@ -4,7 +4,7 @@
 
 [![Portfolio](https://img.shields.io/badge/Portfolio-mahmoudtamer-black?style=for-the-badge&logo=vercel)](https://mahmoud-tamer-portfolio.vercel.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-mahmoudtamer0-181717?style=for-the-badge&logo=github)](https://github.com/mahmoudtamer0)
-[![Swagger Docs](https://img.shields.io/badge/API%20Docs-Swagger-85EA2D?style=for-the-badge&logo=swagger)](http://localhost:3000/api-docs)
+[![Postman](https://img.shields.io/badge/API%20Docs-Postman-FF6C37?style=for-the-badge&logo=postman)](https://www.postman.com/mahmoudtamer0-8816438/workspace/default-workspace/collection/50295562-d9c8f40c-9f51-4ef7-be12-1efcd1cdef60?action=share&source=copy-link&creator=50295562)
 
 ---
 
@@ -14,7 +14,7 @@
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
-- [Swagger API Docs](#swagger-api-docs)
+- [Postman Collection](#-postman-collection)
 - [API Reference](#api-reference)
   - [Auth & Users](#auth--users)
   - [Products](#products)
@@ -109,93 +109,13 @@ MAIL_PASS=your_mail_password
 
 ---
 
-## Swagger API Docs
+## 📮 Postman Collection
 
-This project uses **Swagger UI** for interactive API documentation. Once the server is running, visit:
+Test all API endpoints directly via the public Postman collection:
 
-```
-http://localhost:3000/api-docs
-```
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://www.postman.com/mahmoudtamer0-8816438/workspace/default-workspace/collection/50295562-d9c8f40c-9f51-4ef7-be12-1efcd1cdef60?action=share&source=copy-link&creator=50295562)
 
-### Setup
-
-**1. Install packages:**
-
-```bash
-npm install swagger-jsdoc swagger-ui-express
-```
-
-**2. Add to `app.js`:**
-
-```js
-import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Shop-Co API',
-      version: '1.0.0',
-      description: 'Full-featured E-Commerce REST API',
-      contact: {
-        name: 'Mahmoud Tamer',
-        url: 'https://mahmoud-tamer-portfolio.vercel.app/',
-      },
-    },
-    servers: [
-      { url: 'http://localhost:3000/api/v1', description: 'Development' },
-    ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
-  },
-  apis: ['./src/modules/**/*.router.js'],
-};
-
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-```
-
-**3. Annotate your routes with JSDoc comments:**
-
-```js
-/**
- * @swagger
- * /users/login:
- *   post:
- *     summary: Login with email and password
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email, password]
- *             properties:
- *               email:
- *                 type: string
- *                 example: user@example.com
- *               password:
- *                 type: string
- *                 example: yourpassword
- *     responses:
- *       200:
- *         description: Returns accessToken and refreshToken
- *       401:
- *         description: Invalid credentials
- */
-router.post("/login", loginValidator, login);
-```
-
-> 💡 Repeat this pattern for every route — Swagger auto-generates the interactive UI from these comments.
+> The collection includes all endpoints grouped by module, with example requests and environment variables for `baseUrl` and `token`.
 
 ---
 
