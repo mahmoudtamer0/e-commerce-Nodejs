@@ -22,4 +22,4 @@ const swaggerSpec = swaggerJSDoc({
     apis: ["./src/modules/**/*.js", "./src/modules/**/*.router.js"],
 });
 
-exports = module.exports = swaggerSpec;
+module.exports = swaggerSpec;
