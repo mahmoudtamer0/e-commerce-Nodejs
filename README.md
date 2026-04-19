@@ -2,6 +2,10 @@
 
 > A full-featured e-commerce backend built with Node.js & Express, supporting authentication, product management, orders, reviews, and more.
 
+[![Portfolio](https://img.shields.io/badge/Portfolio-mahmoudtamer-black?style=for-the-badge&logo=vercel)](https://mahmoud-tamer-portfolio.vercel.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-mahmoudtamer0-181717?style=for-the-badge&logo=github)](https://github.com/mahmoudtamer0)
+[![Swagger Docs](https://img.shields.io/badge/API%20Docs-Swagger-85EA2D?style=for-the-badge&logo=swagger)](http://localhost:3000/api-docs)
+
 ---
 
 ## 📋 Table of Contents
@@ -10,6 +14,7 @@
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
+- [Swagger API Docs](#swagger-api-docs)
 - [API Reference](#api-reference)
   - [Auth & Users](#auth--users)
   - [Products](#products)
@@ -49,6 +54,7 @@ Key capabilities:
 | File Storage | Multer (multi-file upload) |
 | Validation | Custom validators (middleware) |
 | Rate Limiting | express-rate-limit |
+| API Docs | Swagger (swagger-jsdoc + swagger-ui-express) |
 
 ---
 
@@ -56,7 +62,7 @@ Key capabilities:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/your-username/shop-co.git
+git clone https://github.com/mahmoudtamer0/shop-co.git
 cd shop-co
 
 # 2. Install dependencies
@@ -100,6 +106,96 @@ MAIL_PORT=587
 MAIL_USER=your@email.com
 MAIL_PASS=your_mail_password
 ```
+
+---
+
+## Swagger API Docs
+
+This project uses **Swagger UI** for interactive API documentation. Once the server is running, visit:
+
+```
+http://localhost:3000/api-docs
+```
+
+### Setup
+
+**1. Install packages:**
+
+```bash
+npm install swagger-jsdoc swagger-ui-express
+```
+
+**2. Add to `app.js`:**
+
+```js
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Shop-Co API',
+      version: '1.0.0',
+      description: 'Full-featured E-Commerce REST API',
+      contact: {
+        name: 'Mahmoud Tamer',
+        url: 'https://mahmoud-tamer-portfolio.vercel.app/',
+      },
+    },
+    servers: [
+      { url: 'http://localhost:3000/api/v1', description: 'Development' },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+  },
+  apis: ['./src/modules/**/*.router.js'],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+```
+
+**3. Annotate your routes with JSDoc comments:**
+
+```js
+/**
+ * @swagger
+ * /users/login:
+ *   post:
+ *     summary: Login with email and password
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 example: yourpassword
+ *     responses:
+ *       200:
+ *         description: Returns accessToken and refreshToken
+ *       401:
+ *         description: Invalid credentials
+ */
+router.post("/login", loginValidator, login);
+```
+
+> 💡 Repeat this pattern for every route — Swagger auto-generates the interactive UI from these comments.
 
 ---
 
@@ -453,4 +549,13 @@ This project is licensed under the MIT License.
 
 ---
 
-*Built with ❤️ by the Shop-Co team*
+## 👨‍💻 Author
+
+**Mahmoud Tamer**
+
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-black?style=flat-square&logo=vercel)](https://mahmoud-tamer-portfolio.vercel.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-mahmoudtamer0-181717?style=flat-square&logo=github)](https://github.com/mahmoudtamer0)
+
+---
+
+*Built with ❤️ by Mahmoud Tamer*
