@@ -6,28 +6,6 @@
 [![GitHub](https://img.shields.io/badge/GitHub-mahmoudtamer0-181717?style=for-the-badge&logo=github)](https://github.com/mahmoudtamer0)
 [![Postman](https://img.shields.io/badge/API%20Docs-Postman-FF6C37?style=for-the-badge&logo=postman)](https://www.postman.com/mahmoudtamer0-8816438/workspace/default-workspace/collection/50295562-d9c8f40c-9f51-4ef7-be12-1efcd1cdef60?action=share&source=copy-link&creator=50295562)
 
----
-
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Postman Collection](#-postman-collection)
-- [API Reference](#api-reference)
-  - [Auth & Users](#auth--users)
-  - [Products](#products)
-  - [Orders](#orders)
-  - [Reviews](#reviews)
-  - [Categories](#categories)
-- [Authentication](#authentication)
-- [Roles & Permissions](#roles--permissions)
-- [File Uploads](#file-uploads)
-- [Rate Limiting](#rate-limiting)
-- [Error Handling](#error-handling)
-
----
 
 ## Overview
 
